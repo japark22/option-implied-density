@@ -1,5 +1,8 @@
 name: tests
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore: ["results/live/**"]
+  pull_request:
 jobs:
   test:
     runs-on: ubuntu-latest

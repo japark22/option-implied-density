@@ -1,0 +1,37 @@
+name: live
+
+# Fit the real SPXW chain once per trading day near the close
+# (19:50 UTC = 15:50 EDT / 14:50 EST) and log diagnostics to results/live/.
+on:
+  schedule:
+    - cron: "50 19 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: live
+  cancel-in-progress: false
+
+jobs:
+  fit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - run: python scripts/live_fit.py
+      - name: commit results
+        run: |
+          git config user.name "rnd-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add results/live
+          git diff --cached --quiet && exit 0
+          git commit -m "live: SPXW fit $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3; do git pull --rebase && git push && exit 0; sleep $((i*5)); done
+          exit 1

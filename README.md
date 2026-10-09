@@ -74,6 +74,25 @@ The point estimates use auto-selection; full tables are in [`results/known_answe
 - **0DTE is the hard case, and the bands under-cover (61%).** The error left outside the band was at most 0.21 percentage points per 25-point bucket across the 12 runs, with 0.11 pp at the 90th percentile. This is the largest value observed, not a bound. [`kalshi-mispricing-engine`](https://github.com/japark22/kalshi-mispricing-engine) uses that maximum as an explicit model-error tolerance rather than pretending the band is exact. For scale, one Kalshi cent is 1 pp.
 - **The parity forward is accurate to under a quarter of a basis point** (mean absolute error 0.04–0.23 bp), with no rate input. This is on synthetic chains where parity holds exactly up to quote noise. Expect larger errors on real chains, where quotes can be stale or crossed.
 
+## Live: real SPXW chains
+
+The same pipeline runs on the real market every trading day. A [GitHub Actions job](.github/workflows/live.yml) downloads Cboe's public delayed SPX chain near the close and fits two PM-settled expiries: the front expiry (0–1 day) and the one closest to a week out. It then appends the diagnostics to [`results/live/history.csv`](results/live/history.csv).
+
+![Latest live fit](results/live/latest_front.png)
+
+*Left: implied-vol bid-ask ranges from the market with both fitted smiles. Right: the risk-neutral density with its band. The title reports how many executable static-arbitrage violations exist in the raw quotes.*
+
+Each row of the history records:
+
+- the parity forward and discount factor;
+- each model's pricing error in half-spreads, and the share of fitted prices inside the bid-ask;
+- quantiles, skew and kurtosis of the density;
+- the probability of a ±2% move, with its band;
+- hard and soft arbitrage counts;
+- negative mass, martingale error and bootstrap failures.
+
+The fit uses the chain's **as-of time** (its newest trade), not the download time. Raw quotes are never stored.
+
 ## Quickstart
 
 ```bash
@@ -81,7 +100,7 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 pytest -q                                   # 27 tests, offline
 python scripts/known_answer_study.py        # regenerates results/ (~10 min on 2 cores)
-python scripts/fit_cboe_snapshot.py         # today's SPXW density from Cboe delayed quotes (market hours)
+python scripts/live_fit.py                  # fit today's real SPXW chains (Cboe delayed quotes)
 ```
 
 ```python
@@ -109,8 +128,8 @@ print(fit.summary())                                       # F, DF, fit RMSE in 
 ```
 src/rnd/       black.py · chain.py (parity forward, OTM table) · smile.py (SVI, spline) · density.py (BL)
                bootstrap.py (quote + model uncertainty) · arbitrage.py · validation.py · synthetic.py · io/
-scripts/       known_answer_study.py · fit_cboe_snapshot.py
-results/       study outputs (CSV, markdown, figure) - all generated
+scripts/       known_answer_study.py · live_fit.py · fit_cboe_snapshot.py
+results/       study outputs (CSV, markdown, figure) and live/ real-chain fits - all generated
 docs/          METHODOLOGY.md (derivations, design choices, references)
 ```
 
