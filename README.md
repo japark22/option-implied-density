@@ -98,7 +98,7 @@ The fit uses the chain's **as-of time** (its newest trade), not the download tim
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-pytest -q                                   # 27 tests, offline
+pytest -q                                   # 29 tests, offline
 python scripts/known_answer_study.py        # regenerates results/ (~10 min on 2 cores)
 python scripts/live_fit.py                  # fit today's real SPXW chains (Cboe delayed quotes)
 ```
