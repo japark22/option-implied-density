@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "option-implied-density"
+version = "0.1.0"
+description = "Breeden-Litzenberger risk-neutral densities with bid-ask and model-risk error bars, validated on known answers"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "Jungan Park"}]
+dependencies = ["numpy>=2.0", "scipy>=1.11", "pandas>=2.0", "matplotlib>=3.7"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "tabulate>=0.9", "requests>=2.31"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
