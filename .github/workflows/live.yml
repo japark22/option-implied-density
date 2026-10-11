@@ -2,9 +2,14 @@ name: live
 
 # Fit the real SPXW chain once per trading day near the close
 # (19:50 UTC = 15:50 EDT / 14:50 EST) and log diagnostics to results/live/.
+# GitHub delays or drops scheduled runs under load, so two later backup slots run
+# the same fit; history.csv is de-duplicated on (as-of time, expiry), so a backup
+# that sees the same chain adds nothing.
 on:
   schedule:
     - cron: "50 19 * * 1-5"
+    - cron: "20 21 * * 1-5"
+    - cron: "40 23 * * 1-5"
   workflow_dispatch:
 
 permissions:
